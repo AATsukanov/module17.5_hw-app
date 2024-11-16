@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from backend.db_depends import get_db
 # Аннотации, Модели БД и Pydantic.
 from typing import Annotated
-from models import User
+from models import User, Task
 from schemas import CreateUser, UpdateUser
 # Функции работы с записями.
 from sqlalchemy import insert, select, update, delete
@@ -112,3 +112,17 @@ async def delete_user(db: Annotated[Session, Depends(get_db)], user_id: int):
         'status_code': status.HTTP_200_OK,
         'transaction': 'User was deleted successfully!'
     }
+
+'''
+В модуле user.py:
+Создайте новый маршрут get "/user_id/tasks" и функцию tasks_by_user_id. 
+Логика этой функции должна заключатся в возврате всех Task конкретного User по id.'''
+@router.get('/user_id/tasks')
+async def tasks_by_user_id(db: Annotated[Session, Depends(get_db)], user_id: int):
+    tasks = db.scalars(select(Task).where(Task.user_id == user_id)).all()
+    if tasks is None:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'There are no tasks for user_id = {user_id}'
+        )
+    return tasks

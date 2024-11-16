@@ -13,10 +13,12 @@ class UpdateUser(BaseModel):
 
 class CreateTask(BaseModel):
     title: str
-    content: str
+    completed: bool = False
     priority: int
+    user_id: int
 
 class UpdateTask(BaseModel):
     title: str
-    content: str
+    completed: bool
     priority: int
+    user_id: int

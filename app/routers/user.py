@@ -22,7 +22,8 @@ router = APIRouter(prefix='/user', tags=['user'])
 @router.get('/')
 async def all_users(db: Annotated[Session, Depends(get_db)]):
     users = db.scalars(select(User)).all()
-    if users is None:
+    #if users is None:
+    if not users:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There are no users'
@@ -38,7 +39,8 @@ async def all_users(db: Annotated[Session, Depends(get_db)]):
 @router.get('/user_id')
 async def user_by_id(db: Annotated[Session, Depends(get_db)], user_id: str):
     user = db.scalars(select(User).where(User.id == user_id))
-    if user is None:
+    #if user is None:
+    if not user:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='User was not found'
@@ -100,13 +102,18 @@ async def update_user(db: Annotated[Session, Depends(get_db)], user_id: int,
 @router.delete('/delete')
 async def delete_user(db: Annotated[Session, Depends(get_db)], user_id: int):
     user_update = db.scalar(select(User).where(User.id == user_id))
-    if user_update is None:
+    #if user_update is None:
+    if not user_update:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='User was not found'
         )
 
     db.execute(delete(User).where(User.id == user_id))
+
+    # теперь удаляем связанные задачи:
+    db.execute(delete(Task).where(Task.user_id == user_id))
+
     db.commit()
     return {
         'status_code': status.HTTP_200_OK,
@@ -120,7 +127,8 @@ async def delete_user(db: Annotated[Session, Depends(get_db)], user_id: int):
 @router.get('/user_id/tasks')
 async def tasks_by_user_id(db: Annotated[Session, Depends(get_db)], user_id: int):
     tasks = db.scalars(select(Task).where(Task.user_id == user_id)).all()
-    if tasks is None:
+    #if tasks is None:
+    if not tasks:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f'There are no tasks for user_id = {user_id}'

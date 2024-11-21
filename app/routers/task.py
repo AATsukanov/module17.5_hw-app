@@ -18,7 +18,8 @@ router = APIRouter(prefix='/task', tags=['task'])
 @router.get('/all_tasks') # или @router.get('/')?
 async def all_tasks(db: Annotated[Session, Depends(get_db)]):
     tasks = db.scalars(select(Task)).all()
-    if tasks is None:
+    #if tasks is None:
+    if not tasks:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There are no tasks'
@@ -29,7 +30,8 @@ async def all_tasks(db: Annotated[Session, Depends(get_db)]):
 @router.get('/task_id')
 async def task_by_id(db: Annotated[Session, Depends(get_db)], task_id: str):
     task = db.scalars(select(Task).where(Task.id == task_id))
-    if task is None:
+    #if task is None:
+    if not task:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Task was not found'
@@ -46,7 +48,8 @@ async def task_by_id(db: Annotated[Session, Depends(get_db)], task_id: str):
 async def create_task(db: Annotated[Session, Depends(get_db)], createtask: CreateTask):
     #сперва проверяем user_id:
     check_user = db.scalar(select(User).where(User.id == createtask.user_id))
-    if check_user is None:
+    #if check_user is None:
+    if not check_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f'User with id={createtask.user_id} for this task does not exist'
@@ -68,7 +71,8 @@ async def create_task(db: Annotated[Session, Depends(get_db)], createtask: Creat
 async def update_task(db: Annotated[Session, Depends(get_db)], task_id: int,
                       update_task_model: UpdateTask):
     task_update = db.scalar(select(Task).where(Task.id == task_id))
-    if task_update is None:
+    #if task_update is None:
+    if not task_update:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Task was not found'
@@ -90,7 +94,8 @@ async def update_task(db: Annotated[Session, Depends(get_db)], task_id: int,
 @router.delete('/delete')
 async def delete_task(db: Annotated[Session, Depends(get_db)], task_id: int):
     task_delete = db.scalar(select(Task).where(Task.id == task_id))
-    if task_delete is None:
+    #if task_delete is None:
+    if not task_delete:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Task was not found'
